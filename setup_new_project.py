@@ -6,6 +6,7 @@ all configuration files with your project information.
 """
 
 import re
+import shutil
 import subprocess  # nosec B404
 import sys
 from pathlib import Path
@@ -64,7 +65,7 @@ def get_user_input() -> Dict[str, Any]:
 def update_pyproject_toml(config: Dict[str, Any]) -> None:
     """Update pyproject.toml with project information."""
     pyproject_path = Path("pyproject.toml")
-    content = pyproject_path.read_text()
+    content = pyproject_path.read_text(encoding="utf-8")
 
     # Update project metadata
     content = re.sub(
@@ -87,7 +88,7 @@ def update_pyproject_toml(config: Dict[str, Any]) -> None:
     )
     content = re.sub(r'Issues = ".*"', f'Issues = "{config["issues_url"]}"', content)
 
-    pyproject_path.write_text(content)
+    pyproject_path.write_text(content, encoding="utf-8")
     print("✅ Updated pyproject.toml")
 
 
@@ -198,7 +199,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 {config['author_name']} - {config['author_email']}
 """
 
-    readme_path.write_text(readme_content)
+    readme_path.write_text(readme_content, encoding="utf-8")
     print("✅ Updated README.md")
 
 
@@ -216,11 +217,12 @@ def rename_module_directory(config: Dict[str, Any]) -> None:
 
 def update_github_workflows(config: Dict[str, Any]) -> None:
     """Update GitHub Actions workflow files."""
+    _ = config  # Currently unused, but kept for future expansion
     workflow_path = Path(".github/workflows/ci.yml")
     if workflow_path.exists():
-        content = workflow_path.read_text()
+        content = workflow_path.read_text(encoding="utf-8")
         # Update any project-specific references if needed
-        workflow_path.write_text(content)
+        workflow_path.write_text(content, encoding="utf-8")
         print("✅ Verified GitHub Actions workflow")
 
 
@@ -235,6 +237,26 @@ def cleanup_template_files() -> None:
         if path.exists():
             path.unlink()
             print(f"✅ Removed template file: {file_path}")
+
+
+def remove_template_git_history() -> None:
+    """Remove the template's git history to start fresh."""
+    git_dir = Path(".git")
+    if git_dir.exists() and git_dir.is_dir():
+        try:
+            shutil.rmtree(git_dir)
+            print("✅ Removed template git history")
+        except Exception as e:
+            print(f"⚠️  Could not remove .git directory: {e}")
+
+
+def initialize_new_git_repo() -> None:
+    """Initialize a new git repository."""
+    try:
+        subprocess.run(["git", "init"], check=True)  # nosec B603, B607
+        print("✅ Initialized new git repository")
+    except subprocess.CalledProcessError as e:
+        print(f"⚠️  Could not initialize git repository: {e}")
 
 
 def create_initial_git_commit(config: Dict[str, Any]) -> None:
@@ -283,12 +305,14 @@ def main() -> None:
 
     # Ask about cleanup and git commit
     cleanup = (
-        input("\\nRemove setup script and create initial git commit? (Y/n): ")
+        input("\\nRemove template files and initialize new git repo? (Y/n): ")
         .strip()
         .lower()
     )
     if cleanup not in ["n", "no"]:
         cleanup_template_files()
+        remove_template_git_history()
+        initialize_new_git_repo()
         create_initial_git_commit(config)
 
     print("\\n✨ Your new Python project is ready!")
