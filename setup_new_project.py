@@ -3,8 +3,20 @@
 
 This script will prompt you for project details and automatically update
 all configuration files with your project information.
+
+Usage:
+    # Interactive mode (prompts for all values)
+    python setup_new_project.py
+
+    # Non-interactive mode (all values provided)
+    python setup_new_project.py --name my-project --description "My awesome project" \
+        --author "John Doe" --email john@example.com --github johndoe
+
+    # Mixed mode (provide some values, prompt for others)
+    python setup_new_project.py --name my-project --author "John Doe"
 """
 
+import argparse
 import re
 import shutil
 import subprocess  # nosec B404
@@ -13,34 +25,95 @@ from pathlib import Path
 from typing import Any, Dict
 
 
-def get_user_input() -> Dict[str, Any]:
-    """Collect project information from user input."""
-    print("🚀 Setting up your new Python project!")
-    print("=" * 50)
+def parse_arguments() -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Setup a new Python project from the clean-python template",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Interactive mode - prompts for all values
+  %(prog)s
+
+  # Full non-interactive mode
+  %(prog)s --name my-project --description "My project" \\
+      --author "Jane Doe" --email jane@example.com --github janedoe
+
+  # Partial mode - provide some values, prompt for others
+  %(prog)s --name my-project --author "Jane Doe"
+
+  # Skip git initialization and cleanup
+  %(prog)s --name my-project --no-git --skip-cleanup
+""",
+    )
+
+    parser.add_argument("--name", help="Project name (e.g., my-awesome-project)")
+    parser.add_argument(
+        "--description", help="Project description (default: 'A clean Python project')"
+    )
+    parser.add_argument("--author", help="Author name")
+    parser.add_argument("--email", help="Author email")
+    parser.add_argument("--github", help="GitHub username (optional)")
+    parser.add_argument(
+        "--no-git", action="store_true", help="Skip git repository initialization"
+    )
+    parser.add_argument(
+        "--skip-cleanup",
+        action="store_true",
+        help="Keep template files (don't remove setup script)",
+    )
+    parser.add_argument(
+        "-y", "--yes", action="store_true", help="Skip confirmation prompt"
+    )
+
+    return parser.parse_args()
+
+
+def get_user_input(args: argparse.Namespace) -> Dict[str, Any]:
+    """Collect project information from user input or CLI arguments."""
+    # Only show header in interactive mode
+    if not all([args.name, args.author, args.email]):
+        print("🚀 Setting up your new Python project!")
+        print("=" * 50)
 
     # Get basic project info
-    project_name = input("Project name (e.g., my-awesome-project): ").strip()
-    if not project_name:
-        print("❌ Project name is required!")
-        sys.exit(1)
+    if args.name:
+        project_name = args.name.strip()
+    else:
+        project_name = input("Project name (e.g., my-awesome-project): ").strip()
+        if not project_name:
+            print("❌ Project name is required!")
+            sys.exit(1)
 
     # Convert project name to valid Python module name
     module_name = re.sub(r"[^a-zA-Z0-9_]", "_", project_name.lower())
     module_name = re.sub(r"^[0-9]", "_", module_name)  # Can't start with number
 
-    description = input("Project description (A clean Python project): ").strip()
-    if not description:
-        description = "A clean Python project"
+    if args.description:
+        description = args.description.strip()
+    else:
+        description = input("Project description (A clean Python project): ").strip()
+        if not description:
+            description = "A clean Python project"
 
-    author_name = input("Author name: ").strip()
-    if not author_name:
-        author_name = "Your Name"
+    if args.author:
+        author_name = args.author.strip()
+    else:
+        author_name = input("Author name: ").strip()
+        if not author_name:
+            author_name = "Your Name"
 
-    author_email = input("Author email: ").strip()
-    if not author_email:
-        author_email = "your.email@example.com"
+    if args.email:
+        author_email = args.email.strip()
+    else:
+        author_email = input("Author email: ").strip()
+        if not author_email:
+            author_email = "your.email@example.com"
 
-    github_username = input("GitHub username (optional): ").strip()
+    if args.github is not None:
+        github_username = args.github.strip()
+    else:
+        github_username = input("GitHub username (optional): ").strip()
 
     # Generate GitHub URLs if username provided
     if github_username:
@@ -279,16 +352,21 @@ def create_initial_git_commit(config: Dict[str, Any]) -> None:
 
 def main() -> None:
     """Main setup function."""
-    print("This script will help you customize this template for your new project.")
-    print("It will modify files in the current directory.")
+    # Parse command line arguments
+    args = parse_arguments()
 
-    proceed = input("\\nDo you want to continue? (y/N): ").strip().lower()
-    if proceed not in ["y", "yes"]:
-        print("Setup cancelled.")
-        sys.exit(0)
+    # Show confirmation unless skipped
+    if not args.yes:
+        print("This script will help you customize this template for your new project.")
+        print("It will modify files in the current directory.")
+
+        proceed = input("\\nDo you want to continue? (y/N): ").strip().lower()
+        if proceed not in ["y", "yes"]:
+            print("Setup cancelled.")
+            sys.exit(0)
 
     # Get user configuration
-    config = get_user_input()
+    config = get_user_input(args)
 
     print("\\n🔧 Updating project files...")
 
@@ -303,25 +381,50 @@ def main() -> None:
     print(f"Module:  {config['module_name']}")
     print(f"Author:  {config['author_name']} <{config['author_email']}>")
 
-    # Ask about cleanup and git commit
-    cleanup = (
-        input("\\nRemove template files and initialize new git repo? (Y/n): ")
-        .strip()
-        .lower()
-    )
-    if cleanup not in ["n", "no"]:
-        cleanup_template_files()
-        remove_template_git_history()
-        initialize_new_git_repo()
-        create_initial_git_commit(config)
+    # Handle cleanup and git initialization based on arguments
+    if args.skip_cleanup:
+        print("\\n⚠️  Skipping cleanup (keeping setup script)")
+    else:
+        if args.yes or not args.skip_cleanup:
+            cleanup_template_files()
+        else:
+            cleanup = input("\\nRemove template files? (Y/n): ").strip().lower()
+            if cleanup not in ["n", "no"]:
+                cleanup_template_files()
+
+    # Handle git initialization
+    if args.no_git:
+        print("⚠️  Skipping git initialization")
+    else:
+        if args.yes:
+            remove_template_git_history()
+            initialize_new_git_repo()
+            create_initial_git_commit(config)
+        else:
+            git_init = (
+                input("\\nInitialize new git repository? (Y/n): ").strip().lower()
+            )
+            if git_init not in ["n", "no"]:
+                remove_template_git_history()
+                initialize_new_git_repo()
+                create_initial_git_commit(config)
 
     print("\\n✨ Your new Python project is ready!")
     print("\\nNext steps:")
-    print("1. Create a virtual environment: python -m venv .venv")
-    print("2. Activate it: source .venv/bin/activate")
-    print("3. Install dependencies: pip install -e '.[dev]'")
-    print("4. Install pre-commit hooks: pre-commit install")
-    print("5. Start coding! 🚀")
+    if not args.no_git:
+        print("1. cd into your project directory (if needed)")
+        print("2. Create a virtual environment: python -m venv .venv")
+        print("3. Activate it: source .venv/bin/activate")
+        print("4. Install dependencies: pip install -e '.[dev]'")
+        print("5. Install pre-commit hooks: pre-commit install")
+        print("6. Start coding! 🚀")
+    else:
+        print("1. Initialize git: git init")
+        print("2. Create a virtual environment: python -m venv .venv")
+        print("3. Activate it: source .venv/bin/activate")
+        print("4. Install dependencies: pip install -e '.[dev]'")
+        print("5. Install pre-commit hooks: pre-commit install")
+        print("6. Start coding! 🚀")
 
 
 if __name__ == "__main__":
