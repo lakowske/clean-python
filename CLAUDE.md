@@ -47,6 +47,38 @@ clean-python/
 - `pre-commit install` - Install pre-commit hooks
 - `pre-commit run --all-files` - Run all pre-commit checks
 
+## Logging Standards
+All code should implement comprehensive logging with the following requirements:
+- **Severity levels** - Use appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+- **File location** - Include `__name__` or explicit file path in logger configuration
+- **Line numbers** - Use `%(lineno)d` in formatter to capture line numbers
+- **Operation context** - Log the operation being performed with descriptive messages
+- **Variable tracking** - Include relevant variable names and their values in log messages
+
+### Example Logging Configuration
+```python
+import logging
+
+# Configure logger with comprehensive formatting
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+# Example usage
+def process_data(data_id, data_content):
+    logger.info(f"Starting data processing - data_id: {data_id}, content_length: {len(data_content)}")
+    try:
+        # Process data
+        result = transform_data(data_content)
+        logger.debug(f"Data transformation successful - result_type: {type(result)}, result_size: {len(result)}")
+        return result
+    except Exception as e:
+        logger.error(f"Data processing failed - data_id: {data_id}, error: {str(e)}", exc_info=True)
+        raise
+```
+
 ## Quality Gates
 Every commit must pass:
 1. Code formatting (Black)
