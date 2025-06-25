@@ -17,6 +17,7 @@ Usage:
 """
 
 import argparse
+import os
 import re
 import shutil
 import subprocess  # nosec B404
@@ -44,6 +45,9 @@ Examples:
 
   # Skip git initialization and cleanup
   %(prog)s --name my-project --no-git --skip-cleanup
+
+  # Create project in specific directory
+  %(prog)s --name my-project --output-dir ~/projects/my-project
 """,
     )
 
@@ -54,6 +58,10 @@ Examples:
     parser.add_argument("--author", help="Author name")
     parser.add_argument("--email", help="Author email")
     parser.add_argument("--github", help="GitHub username (optional)")
+    parser.add_argument(
+        "--output-dir",
+        help="Directory to create the new project in (default: ../<project-name>)",
+    )
     parser.add_argument(
         "--no-git", action="store_true", help="Skip git repository initialization"
     )
@@ -350,23 +358,93 @@ def create_initial_git_commit(config: Dict[str, Any]) -> None:
         print(f"⚠️  Could not create git commit: {e}")
 
 
+def copy_template_files(source_dir: Path, target_dir: Path) -> None:
+    """Copy all template files to the target directory."""
+    # Files and directories to exclude from copying
+    exclude_patterns = {
+        ".git",
+        "__pycache__",
+        ".pytest_cache",
+        "*.pyc",
+        ".venv",
+        "venv",
+        "env",
+        "htmlcov",
+        ".coverage",
+        "setup_new_project.py",  # Don't copy this setup script
+    }
+
+    def should_exclude(path: Path) -> bool:
+        """Check if a path should be excluded."""
+        name = path.name
+        for pattern in exclude_patterns:
+            if pattern.startswith("*") and name.endswith(pattern[1:]):
+                return True
+            elif name == pattern:
+                return True
+        return False
+
+    # Copy all files and directories
+    for item in source_dir.iterdir():
+        if should_exclude(item):
+            continue
+
+        source_path = item
+        target_path = target_dir / item.name
+
+        if item.is_dir():
+            shutil.copytree(
+                source_path,
+                target_path,
+                ignore=shutil.ignore_patterns(*exclude_patterns),
+            )
+        else:
+            shutil.copy2(source_path, target_path)
+
+    print(f"✅ Copied template files to {target_dir}")
+
+
 def main() -> None:
     """Main setup function."""
     # Parse command line arguments
     args = parse_arguments()
 
+    # Get user configuration first to have project name
+    config = get_user_input(args)
+
+    # Determine output directory
+    if args.output_dir:
+        output_dir = Path(args.output_dir).resolve()
+    else:
+        # Default to parent directory with project name
+        output_dir = Path.cwd().parent / config["project_name"]
+
+    # Check if output directory already exists
+    if output_dir.exists():
+        print(f"❌ Directory already exists: {output_dir}")
+        print("Please choose a different project name or output directory.")
+        sys.exit(1)
+
     # Show confirmation unless skipped
     if not args.yes:
-        print("This script will help you customize this template for your new project.")
-        print("It will modify files in the current directory.")
+        print(f"This script will create a new project at: {output_dir}")
+        print(f"Based on the clean-python template at: {Path.cwd()}")
 
         proceed = input("\\nDo you want to continue? (y/N): ").strip().lower()
         if proceed not in ["y", "yes"]:
             print("Setup cancelled.")
             sys.exit(0)
 
-    # Get user configuration
-    config = get_user_input(args)
+    # Create output directory
+    output_dir.mkdir(parents=True, exist_ok=False)
+    print(f"\\n🔧 Creating new project at: {output_dir}")
+
+    # Copy template files
+    copy_template_files(Path.cwd(), output_dir)
+
+    # Change to output directory for all operations
+    original_dir = Path.cwd()
+    os.chdir(output_dir)
 
     print("\\n🔧 Updating project files...")
 
@@ -409,22 +487,23 @@ def main() -> None:
                 initialize_new_git_repo()
                 create_initial_git_commit(config)
 
+    # Change back to original directory
+    os.chdir(original_dir)
+
     print("\\n✨ Your new Python project is ready!")
+    print(f"\\n📁 Project created at: {output_dir}")
     print("\\nNext steps:")
+    print(f"1. cd {output_dir}")
+    print("2. Create a virtual environment: python -m venv .venv")
+    print("3. Activate: source .venv/bin/activate  # Win: .venv\\Scripts\\activate")
+    print("4. Install dependencies: pip install -e '.[dev]'")
     if not args.no_git:
-        print("1. cd into your project directory (if needed)")
-        print("2. Create a virtual environment: python -m venv .venv")
-        print("3. Activate it: source .venv/bin/activate")
-        print("4. Install dependencies: pip install -e '.[dev]'")
         print("5. Install pre-commit hooks: pre-commit install")
         print("6. Start coding! 🚀")
     else:
-        print("1. Initialize git: git init")
-        print("2. Create a virtual environment: python -m venv .venv")
-        print("3. Activate it: source .venv/bin/activate")
-        print("4. Install dependencies: pip install -e '.[dev]'")
-        print("5. Install pre-commit hooks: pre-commit install")
-        print("6. Start coding! 🚀")
+        print("5. Initialize git: git init")
+        print("6. Install pre-commit hooks: pre-commit install")
+        print("7. Start coding! 🚀")
 
 
 if __name__ == "__main__":
