@@ -37,6 +37,14 @@ repos:
             args: ["-c", "pyproject.toml"]
             additional_dependencies: ["bandit[toml]"]
 
+    - repo: https://github.com/executablebooks/mdformat
+      rev: 0.7.17
+      hooks:
+        - id: mdformat
+          additional_dependencies:
+            - mdformat-gfm
+            - mdformat-tables
+
     - repo: local
       hooks:
           - id: pytest-coverage

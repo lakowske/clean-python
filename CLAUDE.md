@@ -1,22 +1,27 @@
 # Clean Python Project Template
 
 ## Project Purpose
+
 This is a template for creating clean, professional Python projects that incorporate industry best practices from the start. It serves as a foundation for new Python projects with all the essential development tools and quality assurance measures pre-configured.
 
 ## Clean Code Practices Implemented
 
 ### Code Quality & Standards
+
 - **Black** - Automatic code formatting with 88 character line length
 - **Flake8** - Comprehensive linting with Google docstring conventions
+- **mdformat** - Markdown formatting with GitHub Flavored Markdown support
 - **Pre-commit hooks** - Automated quality checks before every commit
 
 ### Testing & Coverage
+
 - **Pytest** - Modern testing framework with proper project structure
 - **Coverage reporting** - Minimum 80% code coverage required
 - **HTML coverage reports** - Generated in `htmlcov/` directory
 - **Integration testing** - Structured test organization
 
 ### Git Workflow
+
 - **Pre-commit configuration** - Ensures code quality on every commit
 - **Automated checks** for:
   - Trailing whitespace removal
@@ -25,10 +30,12 @@ This is a template for creating clean, professional Python projects that incorpo
   - Large file detection
   - Code formatting (Black)
   - Linting (Flake8)
+  - Markdown formatting (mdformat with GFM support)
   - Test coverage (Pytest with 80% minimum)
 
 ## Project Structure
-```
+
+```text
 clean-python/
 ├── actions/          # Project build and automation scripts
 ├── tests/           # Test suite with pytest configuration
@@ -41,6 +48,7 @@ clean-python/
 ```
 
 ## Development Commands
+
 - `pytest --cov=. --cov-report=term-missing --cov-fail-under=80 --cov-report=html` - Run tests with coverage
 - `black .` - Format code
 - `flake8` - Run linting
@@ -48,7 +56,9 @@ clean-python/
 - `pre-commit run --all-files` - Run all pre-commit checks
 
 ## Logging Standards
+
 All code should implement comprehensive logging with the following requirements:
+
 - **Severity levels** - Use appropriate levels (DEBUG, INFO, WARNING, ERROR, CRITICAL)
 - **File location** - Include `__name__` or explicit file path in logger configuration
 - **Line numbers** - Use `%(lineno)d` in formatter to capture line numbers
@@ -56,6 +66,7 @@ All code should implement comprehensive logging with the following requirements:
 - **Variable tracking** - Include relevant variable names and their values in log messages
 
 ### Example Logging Configuration
+
 ```python
 import logging
 
@@ -80,13 +91,16 @@ def process_data(data_id, data_content):
 ```
 
 ## Quality Gates
+
 Every commit must pass:
+
 1. Code formatting (Black)
-2. Linting checks (Flake8)
-3. All tests passing
-4. Minimum 80% code coverage
-5. No trailing whitespace
-6. Proper file endings
-7. Valid YAML syntax
+1. Linting checks (Flake8)
+1. Markdown formatting (mdformat)
+1. All tests passing
+1. Minimum 80% code coverage
+1. No trailing whitespace
+1. Proper file endings
+1. Valid YAML syntax
 
 This template ensures that code quality, testing, and documentation standards are maintained throughout the development lifecycle.

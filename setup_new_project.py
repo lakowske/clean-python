@@ -75,7 +75,8 @@ def update_pyproject_toml(config: Dict[str, Any]) -> None:
     )
     content = re.sub(
         r'authors = \[{name = ".*", email = ".*"}\]',
-        f'authors = [{{name = "{config["author_name"]}", email = "{config["author_email"]}"}}]',
+        f'authors = [{{name = "{config["author_name"]}", '
+        f'email = "{config["author_email"]}"}}]',
         content,
     )
 
@@ -146,7 +147,7 @@ pre-commit install
 # Run tests with coverage
 pytest --cov=. --cov-report=term-missing --cov-fail-under=80 --cov-report=html
 
-# Or use the VS Code task: Ctrl+Shift+P -> "Tasks: Run Task" -> "Run Tests with Coverage"
+# Or use VS Code: Ctrl+Shift+P -> "Tasks: Run Task" -> "Run Tests with Coverage"
 ```
 
 ### Code Quality
@@ -208,9 +209,7 @@ def rename_module_directory(config: Dict[str, Any]) -> None:
 
     if old_module_path.exists() and old_module_path != new_module_path:
         old_module_path.rename(new_module_path)
-        print(
-            f"✅ Renamed module directory: src/clean_python -> src/{config['module_name']}"
-        )
+        print(f"✅ Renamed module: src/clean_python -> src/{config['module_name']}")
     elif not old_module_path.exists():
         print("⚠️  Module directory src/clean_python not found, skipping rename")
 
