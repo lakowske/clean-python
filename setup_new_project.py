@@ -23,7 +23,7 @@ import shutil
 import subprocess  # nosec B404
 import sys
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -296,6 +296,42 @@ def rename_module_directory(config: Dict[str, Any]) -> None:
         print("⚠️  Module directory src/clean_python not found, skipping rename")
 
 
+def update_imports_in_files(config: Dict[str, Any]) -> None:
+    """Update imports from clean_python to the new module name in all Python files."""
+    module_name = config["module_name"]
+
+    # Find all Python files in the project
+    python_files: List[Path] = []
+    for pattern in ["**/*.py", "tests/**/*.py"]:
+        python_files.extend(Path(".").glob(pattern))
+
+    for file_path in python_files:
+        if file_path.is_file():
+            try:
+                content = file_path.read_text(encoding="utf-8")
+                original_content = content
+
+                # Update imports
+                content = re.sub(
+                    r"from clean_python(\.[\w.]+)? import",
+                    rf"from {module_name}\1 import",
+                    content,
+                )
+                content = re.sub(
+                    r"import clean_python(\.[\w.]+)?",
+                    rf"import {module_name}\1",
+                    content,
+                )
+
+                # Write back if changed
+                if content != original_content:
+                    file_path.write_text(content, encoding="utf-8")
+                    print(f"✅ Updated imports in {file_path}")
+
+            except Exception as e:
+                print(f"⚠️  Could not update imports in {file_path}: {e}")
+
+
 def update_github_workflows(config: Dict[str, Any]) -> None:
     """Update GitHub Actions workflow files."""
     _ = config  # Currently unused, but kept for future expansion
@@ -452,6 +488,7 @@ def main() -> None:
     update_pyproject_toml(config)
     update_readme_md(config)
     rename_module_directory(config)
+    update_imports_in_files(config)
     update_github_workflows(config)
 
     print("\\n🎉 Project setup complete!")
