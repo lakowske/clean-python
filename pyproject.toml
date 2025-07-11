@@ -35,17 +35,13 @@ where = ["src"]
 dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
-    "black>=23.0.0",
-    "flake8>=6.0.0",
-    "flake8-docstrings>=1.7.0",
+    "ruff>=0.8.0",
     "mdformat>=0.7.0",           # Markdown formatter
     "mdformat-gfm>=0.3.0",      # GitHub Flavored Markdown support
     "mdformat-tables>=0.4.0",   # Table formatting
     "pre-commit>=4.0.0",
     "coverage>=7.0.0",
     "mypy>=1.0.0",
-    "isort>=5.0.0",
-    "bandit>=1.7.0",
 ]
 
 [project.urls]
@@ -57,23 +53,69 @@ Issues = "https://github.com/lakowske/clean-python/issues"
 wrap = 88
 end_of_line = "lf"
 
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ['py38']
-include = '\.pyi?$'
-extend-exclude = '''
-/(
-  # directories
-  \.eggs
-  | \.git
-  | \.hg
-  | \.mypy_cache
-  | \.tox
-  | \.venv
-  | build
-  | dist
-)/
-'''
+target-version = "py38"
+
+# Exclude directories
+exclude = [
+    ".venv",
+    "venv",
+    "build",
+    "dist",
+    ".git",
+    "__pycache__",
+    ".eggs",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".ruff_cache",
+]
+
+[tool.ruff.lint]
+# Enable multiple rule categories
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "S",    # bandit security
+    "D",    # pydocstyle
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "C4",   # comprehensions
+    "DTZ",  # datetime
+    "T10",  # debugger
+    "EM",   # error messages
+    "PIE",  # misc lints
+    "RSE",  # raise statements
+    "RET",  # return statements
+    "SIM",  # simplifications
+    "PTH",  # pathlib
+]
+
+# Ignore specific rules
+ignore = [
+    "E203",  # Whitespace before ':' (conflicts with black)
+    "E501",  # Line too long (handled by formatter)
+    "S101",  # Use of assert (common in tests)
+    "D100",  # Missing docstring in public module
+    "D104",  # Missing docstring in public package
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "D103"]  # Allow assert in tests, don't require test docstrings
+"setup_new_project.py" = ["T201", "S603", "S607", "PTH201", "SIM114", "RET505"]  # Allow print statements and subprocess calls in setup script
+"src/clean_python/actions/build.py" = ["PTH110", "PTH103"]  # Allow os.path usage in build script
+"src/clean_python/core.py" = ["EM101"]  # Allow string literals in exceptions for demo code
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.coverage.run]
 source = ["src"]
@@ -124,15 +166,6 @@ show_error_codes = true
 module = "tests.*"
 disallow_untyped_defs = false
 
-[tool.isort]
-profile = "black"
-multi_line_output = 3
-include_trailing_comma = true
-force_grid_wrap = 0
-use_parentheses = true
-ensure_newline_before_comments = true
-line_length = 88
-src_paths = ["src", "tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -148,8 +181,3 @@ markers = [
     "slow: marks tests as slow (deselect with '-m \"not slow\"')",
     "integration: marks tests as integration tests",
 ]
-
-[tool.bandit]
-exclude_dirs = ["tests", ".venv", "build", "dist"]
-skips = ["B101"]
-targets = ["src"]

@@ -8,8 +8,10 @@ This is a template for creating clean, professional Python projects that incorpo
 
 ### Code Quality & Standards
 
-- **Black** - Automatic code formatting with 88 character line length
-- **Flake8** - Comprehensive linting with Google docstring conventions
+- **Ruff** - Fast, all-in-one Python linter and formatter (replaces Black, Flake8, isort, and Bandit)
+  - Automatic code formatting with 88 character line length
+  - Comprehensive linting with Google docstring conventions
+  - Import sorting and security checks included
 - **mdformat** - Markdown formatting with GitHub Flavored Markdown support
 - **Pre-commit hooks** - Automated quality checks before every commit
 
@@ -28,8 +30,7 @@ This is a template for creating clean, professional Python projects that incorpo
   - End-of-file fixing
   - YAML validation
   - Large file detection
-  - Code formatting (Black)
-  - Linting (Flake8)
+  - Code formatting and linting (Ruff)
   - Markdown formatting (mdformat with GFM support)
   - Test coverage (Pytest with 80% minimum)
 
@@ -50,8 +51,9 @@ clean-python/
 ## Development Commands
 
 - `pytest --cov=. --cov-report=term-missing --cov-fail-under=80 --cov-report=html` - Run tests with coverage
-- `black .` - Format code
-- `flake8` - Run linting
+- `ruff format .` - Format code
+- `ruff check .` - Run linting
+- `ruff check --fix .` - Run linting with auto-fixes
 - `pre-commit install` - Install pre-commit hooks
 - `pre-commit run --all-files` - Run all pre-commit checks
 
@@ -94,8 +96,7 @@ def process_data(data_id, data_content):
 
 Every commit must pass:
 
-1. Code formatting (Black)
-1. Linting checks (Flake8)
+1. Code formatting and linting (Ruff)
 1. Markdown formatting (mdformat)
 1. All tests passing
 1. Minimum 80% code coverage

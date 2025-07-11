@@ -178,9 +178,9 @@ def update_readme_md(config: Dict[str, Any]) -> None:
     readme_path = Path("README.md")
 
     # Create a new README with project-specific content
-    readme_content = f"""# {config['project_name']}
+    readme_content = f"""# {config["project_name"]}
 
-{config['description']}
+{config["description"]}
 
 ## Features
 
@@ -202,8 +202,8 @@ def update_readme_md(config: Dict[str, Any]) -> None:
 
 1. Clone the repository:
 ```bash
-git clone {config['repo_url']}.git
-cd {config['project_name']}
+git clone {config["repo_url"]}.git
+cd {config["project_name"]}
 ```
 
 2. Create and activate a virtual environment:
@@ -235,10 +235,10 @@ pytest --cov=. --cov-report=term-missing --cov-fail-under=80 --cov-report=html
 ### Code Quality
 ```bash
 # Format code
-black .
+ruff format .
 
 # Lint code
-flake8
+ruff check .
 
 # Run all pre-commit checks
 pre-commit run --all-files
@@ -253,8 +253,8 @@ This project includes VS Code tasks for common operations:
 ## Project Structure
 
 ```
-{config['project_name']}/
-├── src/{config['module_name']}/     # Main package
+{config["project_name"]}/
+├── src/{config["module_name"]}/     # Main package
 ├── tests/                          # Test suite
 ├── .github/workflows/              # GitHub Actions
 ├── .vscode/                        # VS Code configuration
@@ -277,7 +277,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Author
 
-{config['author_name']} - {config['author_email']}
+{config["author_name"]} - {config["author_email"]}
 """
 
     readme_path.write_text(readme_content, encoding="utf-8")
@@ -303,7 +303,7 @@ def update_imports_in_files(config: Dict[str, Any]) -> None:
     # Find all Python files in the project
     python_files: List[Path] = []
     for pattern in ["**/*.py", "tests/**/*.py"]:
-        python_files.extend(Path(".").glob(pattern))
+        python_files.extend(Path().glob(pattern))
 
     for file_path in python_files:
         if file_path.is_file():
@@ -414,9 +414,11 @@ def copy_template_files(source_dir: Path, target_dir: Path) -> None:
         """Check if a path should be excluded."""
         name = path.name
         for pattern in exclude_patterns:
-            if pattern.startswith("*") and name.endswith(pattern[1:]):
-                return True
-            elif name == pattern:
+            if (
+                pattern.startswith("*")
+                and name.endswith(pattern[1:])
+                or name == pattern
+            ):
                 return True
         return False
 
