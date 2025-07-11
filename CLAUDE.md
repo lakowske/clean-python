@@ -4,6 +4,8 @@
 
 This is a template for creating clean, professional Python projects that incorporate industry best practices from the start. It serves as a foundation for new Python projects with all the essential development tools and quality assurance measures pre-configured.
 
+For detailed usage instructions and features, see [README.md](README.md).
+
 ## Clean Code Practices Implemented
 
 ### Code Quality & Standards
@@ -103,3 +105,76 @@ Every commit must pass:
 1. Valid YAML syntax
 
 This template ensures that code quality, testing, and documentation standards are maintained throughout the development lifecycle.
+
+## Quick Usage Examples for Claude
+
+### Example 1: Create a new API project interactively
+
+```bash
+# Clone and enter the template
+git clone https://github.com/lakowske/clean-python.git
+cd clean-python
+
+# Run setup interactively
+python setup_new_project.py
+# Enter when prompted:
+# Project name: fastapi-todo-app
+# Description: A REST API for managing todo items
+# Author: John Smith
+# Email: john.smith@example.com
+# GitHub username: johnsmith
+```
+
+### Example 2: Create a CLI tool project with all arguments
+
+```bash
+# Clone template
+git clone https://github.com/lakowske/clean-python.git
+cd clean-python
+
+# One-line setup with all arguments
+python setup_new_project.py \
+    --name python-file-organizer \
+    --description "A CLI tool to organize files by type and date" \
+    --author "Jane Developer" \
+    --email "jane@dev.com" \
+    --github "janedev" \
+    -y
+```
+
+### Example 3: Create a data science project in a specific directory
+
+```bash
+# Clone template
+git clone https://github.com/lakowske/clean-python.git
+cd clean-python
+
+# Create project in custom location
+python setup_new_project.py \
+    --name ml-sentiment-analysis \
+    --description "Machine learning project for sentiment analysis" \
+    --author "Data Scientist" \
+    --email "ds@company.com" \
+    --output-dir ~/projects/ml/sentiment-analysis
+```
+
+### After Project Creation
+
+The new project will be created with:
+
+- All configuration files updated with project information
+- Python package renamed to match the project
+- Fresh git repository initialized with first commit
+- Ready for development with all tools pre-configured
+
+Next steps in the new project:
+
+```bash
+cd ../my-new-project  # or cd to your custom output directory
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+pre-commit install
+```
+
+Now you can start coding with all quality checks automated!
