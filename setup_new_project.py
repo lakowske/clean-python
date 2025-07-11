@@ -196,23 +196,27 @@ def update_readme_md(config: Dict[str, Any]) -> None:
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone {config["repo_url"]}.git
 cd {config["project_name"]}
 ```
 
 2. Create and activate a virtual environment:
+
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
 ```
 
 3. Install the project in development mode:
+
 ```bash
 pip install -e ".[dev]"
 ```
 
 4. Install pre-commit hooks:
+
 ```bash
 pre-commit install
 ```
@@ -220,6 +224,7 @@ pre-commit install
 ## Development
 
 ### Running Tests
+
 ```bash
 # Run tests with coverage
 pytest --cov=. --cov-report=term-missing --cov-fail-under=80 --cov-report=html
@@ -228,6 +233,7 @@ pytest --cov=. --cov-report=term-missing --cov-fail-under=80 --cov-report=html
 ```
 
 ### Code Quality
+
 ```bash
 # Format code
 ruff format .
@@ -242,6 +248,7 @@ pre-commit run --all-files
 ### VS Code Integration
 
 This project includes VS Code tasks for common operations:
+
 - `Ctrl+Shift+P` -> "Tasks: Run Task" to see all available tasks
 - Install the "Task Explorer" extension for a better task management experience
 
@@ -260,11 +267,11 @@ This project includes VS Code tasks for common operations:
 ## Contributing
 
 1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/amazing-feature`
-3. Make your changes and run the quality checks
-4. Commit your changes: `git commit -m 'Add amazing feature'`
-5. Push to the branch: `git push origin feature/amazing-feature`
-6. Open a Pull Request
+1. Create a feature branch: `git checkout -b feature/amazing-feature`
+1. Make your changes and run the quality checks
+1. Commit your changes: `git commit -m 'Add amazing feature'`
+1. Push to the branch: `git push origin feature/amazing-feature`
+1. Open a Pull Request
 
 ## License
 
@@ -276,6 +283,13 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 """
 
     readme_path.write_text(readme_content, encoding="utf-8")
+
+    # Format the README with mdformat to ensure it passes pre-commit checks
+    import contextlib
+
+    with contextlib.suppress(subprocess.CalledProcessError, FileNotFoundError):
+        subprocess.run(["python", "-m", "mdformat", "README.md"], check=True, capture_output=True)
+
     print("✅ Updated README.md")
 
 
