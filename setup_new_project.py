@@ -52,9 +52,7 @@ Examples:
     )
 
     parser.add_argument("--name", help="Project name (e.g., my-awesome-project)")
-    parser.add_argument(
-        "--description", help="Project description (default: 'A clean Python project')"
-    )
+    parser.add_argument("--description", help="Project description (default: 'A clean Python project')")
     parser.add_argument("--author", help="Author name")
     parser.add_argument("--email", help="Author email")
     parser.add_argument("--github", help="GitHub username (optional)")
@@ -62,17 +60,13 @@ Examples:
         "--output-dir",
         help="Directory to create the new project in (default: ../<project-name>)",
     )
-    parser.add_argument(
-        "--no-git", action="store_true", help="Skip git repository initialization"
-    )
+    parser.add_argument("--no-git", action="store_true", help="Skip git repository initialization")
     parser.add_argument(
         "--skip-cleanup",
         action="store_true",
         help="Keep template files (don't remove setup script)",
     )
-    parser.add_argument(
-        "-y", "--yes", action="store_true", help="Skip confirmation prompt"
-    )
+    parser.add_argument("-y", "--yes", action="store_true", help="Skip confirmation prompt")
 
     return parser.parse_args()
 
@@ -149,24 +143,17 @@ def update_pyproject_toml(config: Dict[str, Any]) -> None:
     content = pyproject_path.read_text(encoding="utf-8")
 
     # Update project metadata
-    content = re.sub(
-        r'name = "clean-python"', f'name = "{config["project_name"]}"', content
-    )
-    content = re.sub(
-        r'description = ".*"', f'description = "{config["description"]}"', content
-    )
+    content = re.sub(r'name = "clean-python"', f'name = "{config["project_name"]}"', content)
+    content = re.sub(r'description = ".*"', f'description = "{config["description"]}"', content)
     content = re.sub(
         r'authors = \[{name = ".*", email = ".*"}\]',
-        f'authors = [{{name = "{config["author_name"]}", '
-        f'email = "{config["author_email"]}"}}]',
+        f'authors = [{{name = "{config["author_name"]}", email = "{config["author_email"]}"}}]',
         content,
     )
 
     # Update URLs
     content = re.sub(r'Homepage = ".*"', f'Homepage = "{config["repo_url"]}"', content)
-    content = re.sub(
-        r'Repository = ".*"', f'Repository = "{config["repo_url"]}"', content
-    )
+    content = re.sub(r'Repository = ".*"', f'Repository = "{config["repo_url"]}"', content)
     content = re.sub(r'Issues = ".*"', f'Issues = "{config["issues_url"]}"', content)
 
     pyproject_path.write_text(content, encoding="utf-8")
@@ -414,11 +401,7 @@ def copy_template_files(source_dir: Path, target_dir: Path) -> None:
         """Check if a path should be excluded."""
         name = path.name
         for pattern in exclude_patterns:
-            if (
-                pattern.startswith("*")
-                and name.endswith(pattern[1:])
-                or name == pattern
-            ):
+            if pattern.startswith("*") and name.endswith(pattern[1:]) or name == pattern:
                 return True
         return False
 
@@ -518,9 +501,7 @@ def main() -> None:
             initialize_new_git_repo()
             create_initial_git_commit(config)
         else:
-            git_init = (
-                input("\\nInitialize new git repository? (Y/n): ").strip().lower()
-            )
+            git_init = input("\\nInitialize new git repository? (Y/n): ").strip().lower()
             if git_init not in ["n", "no"]:
                 remove_template_git_history()
                 initialize_new_git_repo()

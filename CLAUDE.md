@@ -9,7 +9,7 @@ This is a template for creating clean, professional Python projects that incorpo
 ### Code Quality & Standards
 
 - **Ruff** - Fast, all-in-one Python linter and formatter (replaces Black, Flake8, isort, and Bandit)
-  - Automatic code formatting with 88 character line length
+  - Automatic code formatting with 120 character line length
   - Comprehensive linting with Google docstring conventions
   - Import sorting and security checks included
 - **mdformat** - Markdown formatting with GitHub Flavored Markdown support
@@ -43,9 +43,7 @@ clean-python/
 ├── build/           # Build artifacts (auto-generated)
 ├── htmlcov/         # HTML coverage reports
 ├── .pre-commit-config.yaml  # Pre-commit hook configuration
-├── .flake8          # Flake8 linting configuration
-├── setup.cfg        # Project metadata and configuration
-└── requirements.txt # Project dependencies
+└── setup.cfg        # Project metadata and configuration
 ```
 
 ## Development Commands

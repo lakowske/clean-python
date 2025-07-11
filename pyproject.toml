@@ -50,11 +50,11 @@ Repository = "https://github.com/lakowske/clean-python"
 Issues = "https://github.com/lakowske/clean-python/issues"
 
 [tool.mdformat]
-wrap = 88
+wrap = 120
 end_of_line = "lf"
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 target-version = "py38"
 
 # Exclude directories
@@ -107,7 +107,7 @@ convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S101", "D103"]  # Allow assert in tests, don't require test docstrings
-"setup_new_project.py" = ["T201", "S603", "S607", "PTH201", "SIM114", "RET505"]  # Allow print statements and subprocess calls in setup script
+"setup_new_project.py" = ["T201", "S603", "S607", "PTH201", "SIM114", "RET505", "SIM108"]  # Allow print statements and subprocess calls in setup script
 "src/clean_python/actions/build.py" = ["PTH110", "PTH103"]  # Allow os.path usage in build script
 "src/clean_python/core.py" = ["EM101"]  # Allow string literals in exceptions for demo code
 
