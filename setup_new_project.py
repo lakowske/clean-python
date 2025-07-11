@@ -156,6 +156,14 @@ def update_pyproject_toml(config: Dict[str, Any]) -> None:
     content = re.sub(r'Repository = ".*"', f'Repository = "{config["repo_url"]}"', content)
     content = re.sub(r'Issues = ".*"', f'Issues = "{config["issues_url"]}"', content)
 
+    # Update file paths in ruff configuration
+    module_name = config["module_name"]
+    content = re.sub(
+        r'"src/clean_python/',
+        f'"src/{module_name}/',
+        content,
+    )
+
     pyproject_path.write_text(content, encoding="utf-8")
     print("✅ Updated pyproject.toml")
 
