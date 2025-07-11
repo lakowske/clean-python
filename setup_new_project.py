@@ -173,7 +173,7 @@ def update_readme_md(config: Dict[str, Any]) -> None:
 
 - Modern Python project structure
 - Comprehensive testing with pytest and coverage reporting
-- Code quality tools (Black, Flake8, MyPy, Bandit)
+- Code quality tools (Ruff for linting/formatting, MyPy for type checking)
 - Pre-commit hooks for automated quality checks
 - GitHub Actions CI/CD pipeline
 - VS Code tasks integration
@@ -309,6 +309,24 @@ def update_imports_in_files(config: Dict[str, Any]) -> None:
                     rf"import {module_name}\1",
                     content,
                 )
+
+                # Update __init__.py metadata if this is an __init__.py file
+                if file_path.name == "__init__.py":
+                    content = re.sub(
+                        r'"""Clean Python package with best practices\."""',
+                        f'"""{config["description"]}"""',
+                        content,
+                    )
+                    content = re.sub(
+                        r'__author__ = "Your Name"',
+                        f'__author__ = "{config["author_name"]}"',
+                        content,
+                    )
+                    content = re.sub(
+                        r'__email__ = "your\.email@example\.com"',
+                        f'__email__ = "{config["author_email"]}"',
+                        content,
+                    )
 
                 # Write back if changed
                 if content != original_content:
