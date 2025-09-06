@@ -169,3 +169,13 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Temporary files and testing
+tmp/*
+!tmp/.gitkeep
+
+# Ty type checker
+.ty_cache/
+
+# Ruff cache
+.ruff_cache/

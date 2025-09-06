@@ -23,7 +23,7 @@ import shutil
 import subprocess  # nosec B404
 import sys
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -71,7 +71,7 @@ Examples:
     return parser.parse_args()
 
 
-def get_user_input(args: argparse.Namespace) -> Dict[str, Any]:
+def get_user_input(args: argparse.Namespace) -> dict[str, Any]:
     """Collect project information from user input or CLI arguments."""
     # Only show header in interactive mode
     if not all([args.name, args.author, args.email]):
@@ -94,28 +94,32 @@ def get_user_input(args: argparse.Namespace) -> Dict[str, Any]:
     if args.description:
         description = args.description.strip()
     else:
-        description = input("Project description (A clean Python project): ").strip()
+        description = (
+            input("Project description (A clean Python project): ").strip()
+            if not args.yes
+            else "A clean Python project"
+        )
         if not description:
             description = "A clean Python project"
 
     if args.author:
         author_name = args.author.strip()
     else:
-        author_name = input("Author name: ").strip()
+        author_name = input("Author name: ").strip() if not args.yes else "Your Name"
         if not author_name:
             author_name = "Your Name"
 
     if args.email:
         author_email = args.email.strip()
     else:
-        author_email = input("Author email: ").strip()
+        author_email = input("Author email: ").strip() if not args.yes else "your.email@example.com"
         if not author_email:
             author_email = "your.email@example.com"
 
-    if args.github is not None:
+    if args.github:
         github_username = args.github.strip()
     else:
-        github_username = input("GitHub username (optional): ").strip()
+        github_username = input("GitHub username (optional): ").strip() if not args.yes else ""
 
     # Generate GitHub URLs if username provided
     if github_username:
@@ -137,7 +141,7 @@ def get_user_input(args: argparse.Namespace) -> Dict[str, Any]:
     }
 
 
-def update_pyproject_toml(config: Dict[str, Any]) -> None:
+def update_pyproject_toml(config: dict[str, Any]) -> None:
     """Update pyproject.toml with project information."""
     pyproject_path = Path("pyproject.toml")
     content = pyproject_path.read_text(encoding="utf-8")
@@ -164,11 +168,18 @@ def update_pyproject_toml(config: Dict[str, Any]) -> None:
         content,
     )
 
+    # Update MyPy overrides module paths
+    content = re.sub(
+        r'module = "src\.clean_python\.core"',
+        f'module = "src.{module_name}.core"',
+        content,
+    )
+
     pyproject_path.write_text(content, encoding="utf-8")
     print("✅ Updated pyproject.toml")
 
 
-def update_readme_md(config: Dict[str, Any]) -> None:
+def update_readme_md(config: dict[str, Any]) -> None:
     """Update README.md with project information."""
     readme_path = Path("README.md")
 
@@ -212,6 +223,13 @@ source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
 3. Install the project in development mode:
 
 ```bash
+# Using Make (recommended)
+make install
+
+# Or using UV (fastest)
+uv pip install -e ".[dev]"
+
+# Or using pip
 pip install -e ".[dev]"
 ```
 
@@ -223,26 +241,25 @@ pre-commit install
 
 ## Development
 
-### Running Tests
+### Available Commands
 
 ```bash
-# Run tests with coverage
+# Using Make (recommended)
+make help         # Show all available commands
+make test         # Run tests with coverage
+make lint         # Run linting
+make format       # Format code
+make type-check   # Run type checking
+make docs         # Build documentation
+make all          # Run all checks
+
+# Or run tools directly
 pytest --cov=. --cov-report=term-missing --cov-fail-under=80 --cov-report=html
-
-# Or use VS Code: Ctrl+Shift+P -> "Tasks: Run Task" -> "Run Tests with Coverage"
-```
-
-### Code Quality
-
-```bash
-# Format code
-ruff format .
-
-# Lint code
-ruff check .
-
-# Run all pre-commit checks
-pre-commit run --all-files
+ruff format .     # Format code
+ruff check .      # Lint code
+mypy .           # Run type checking
+mkdocs serve     # Serve documentation locally
+pre-commit run --all-files  # Run all checks
 ```
 
 ### VS Code Integration
@@ -293,7 +310,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
     print("✅ Updated README.md")
 
 
-def rename_module_directory(config: Dict[str, Any]) -> None:
+def rename_module_directory(config: dict[str, Any]) -> None:
     """Rename the main module directory to match the project."""
     old_module_path = Path("src/clean_python")
     new_module_path = Path(f"src/{config['module_name']}")
@@ -305,12 +322,12 @@ def rename_module_directory(config: Dict[str, Any]) -> None:
         print("⚠️  Module directory src/clean_python not found, skipping rename")
 
 
-def update_imports_in_files(config: Dict[str, Any]) -> None:
+def update_imports_in_files(config: dict[str, Any]) -> None:
     """Update imports from clean_python to the new module name in all Python files."""
     module_name = config["module_name"]
 
     # Find all Python files in the project
-    python_files: List[Path] = []
+    python_files: list[Path] = []
     for pattern in ["**/*.py", "tests/**/*.py"]:
         python_files.extend(Path().glob(pattern))
 
@@ -336,7 +353,7 @@ def update_imports_in_files(config: Dict[str, Any]) -> None:
                 if file_path.name == "__init__.py":
                     content = re.sub(
                         r'"""Clean Python package with best practices\."""',
-                        f'"""{config["description"]}"""',
+                        f'"""{config["description"]}."""',
                         content,
                     )
                     content = re.sub(
@@ -359,7 +376,27 @@ def update_imports_in_files(config: Dict[str, Any]) -> None:
                 print(f"⚠️  Could not update imports in {file_path}: {e}")
 
 
-def update_github_workflows(config: Dict[str, Any]) -> None:
+def update_documentation(config: dict[str, Any]) -> None:
+    """Update documentation files."""
+    module_name = config["module_name"]
+
+    # Update API reference
+    api_doc_path = Path("docs/api.md")
+    if api_doc_path.exists():
+        try:
+            content = api_doc_path.read_text(encoding="utf-8")
+            content = re.sub(
+                r"::: clean_python\.core",
+                f"::: {module_name}.core",
+                content,
+            )
+            api_doc_path.write_text(content, encoding="utf-8")
+            print(f"✅ Updated API reference in {api_doc_path}")
+        except Exception as e:
+            print(f"⚠️  Could not update API reference: {e}")
+
+
+def update_github_workflows(config: dict[str, Any]) -> None:
     """Update GitHub Actions workflow files."""
     _ = config  # Currently unused, but kept for future expansion
     workflow_path = Path(".github/workflows/ci.yml")
@@ -403,7 +440,7 @@ def initialize_new_git_repo() -> None:
         print(f"⚠️  Could not initialize git repository: {e}")
 
 
-def create_initial_git_commit(config: Dict[str, Any]) -> None:
+def create_initial_git_commit(config: dict[str, Any]) -> None:
     """Create an initial git commit with the new project setup."""
     try:
         subprocess.run(["git", "add", "."], check=True)  # nosec B603, B607
@@ -435,6 +472,8 @@ def copy_template_files(source_dir: Path, target_dir: Path) -> None:
         "htmlcov",
         ".coverage",
         "setup_new_project.py",  # Don't copy this setup script
+        "tmp",  # Don't copy tmp directory
+        "test_integration.py",  # Don't copy integration test
     }
 
     def should_exclude(path: Path) -> bool:
@@ -514,6 +553,7 @@ def main() -> None:
     update_readme_md(config)
     rename_module_directory(config)
     update_imports_in_files(config)
+    update_documentation(config)
     update_github_workflows(config)
 
     print("\\n🎉 Project setup complete!")
@@ -556,7 +596,7 @@ def main() -> None:
     print(f"1. cd {output_dir}")
     print("2. Create a virtual environment: python -m venv .venv")
     print("3. Activate: source .venv/bin/activate  # Win: .venv\\Scripts\\activate")
-    print("4. Install dependencies: pip install -e '.[dev]'")
+    print("4. Install dependencies: make install  # or pip install -e '.[dev]'")
     if not args.no_git:
         print("5. Install pre-commit hooks: pre-commit install")
         print("6. Start coding! 🚀")

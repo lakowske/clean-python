@@ -37,7 +37,7 @@
         "editor.defaultFormatter": "charliermarsh.ruff"
     },
 
-    // MyPy configuration (still using separately)
+    // MyPy configuration
     "mypy-type-checker.path": ["./.venv/bin/mypy"],
     "mypy-type-checker.args": [
         "--config-file=pyproject.toml"

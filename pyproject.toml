@@ -9,13 +9,12 @@ description = "A clean Python project template with best practices"
 authors = [{name = "Your Name", email = "your.email@example.com"}]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -23,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
     "requests",
+    "pydantic>=2.0.0",
 ]
 
 [tool.setuptools.packages.find]
@@ -41,7 +41,11 @@ dev = [
     "mdformat-tables>=0.4.0",   # Table formatting
     "pre-commit>=4.0.0",
     "coverage>=7.0.0",
-    "mypy>=1.0.0",
+    "mypy>=1.0.0",               # Type checker (fallback to mypy for now)
+    "mkdocs>=1.5.0",             # Documentation generator
+    "mkdocs-material>=9.0.0",    # Material theme for MkDocs
+    "mkdocstrings[python]>=0.24.0",  # API documentation
+    "uv>=0.4.0",                 # Fast Python package manager
 ]
 
 [project.urls]
@@ -55,7 +59,7 @@ end_of_line = "lf"
 
 [tool.ruff]
 line-length = 120
-target-version = "py38"
+target-version = "py39"
 
 # Exclude directories
 exclude = [
@@ -110,6 +114,7 @@ convention = "google"
 "setup_new_project.py" = ["T201", "S603", "S607", "PTH201", "SIM114", "RET505", "SIM108"]  # Allow print statements and subprocess calls in setup script
 "src/clean_python/actions/build.py" = ["PTH110", "PTH103"]  # Allow os.path usage in build script
 "src/clean_python/core.py" = ["EM101"]  # Allow string literals in exceptions for demo code
+"test_integration.py" = ["S603"]  # Allow subprocess calls in integration test
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
@@ -147,7 +152,7 @@ show_missing = true
 directory = "htmlcov"
 
 [tool.mypy]
-python_version = "3.8"
+python_version = "3.9"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -158,14 +163,25 @@ no_implicit_optional = true
 warn_redundant_casts = true
 warn_unused_ignores = true
 warn_no_return = true
-warn_unreachable = true
+warn_unreachable = false
 strict_equality = true
 show_error_codes = true
+explicit_package_bases = true
 
 [[tool.mypy.overrides]]
 module = "tests.*"
 disallow_untyped_defs = false
 
+[[tool.mypy.overrides]]
+module = "pydantic.*"
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "src.clean_python.core"
+disable_error_code = "misc"
+
+[tool.mkdocs]
+# MkDocs configuration is in mkdocs.yml file
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

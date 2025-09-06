@@ -6,18 +6,25 @@ A modern Python project template with pre-commit hooks for linting, formatting, 
 
 - **Modern Python Packaging**: Uses `pyproject.toml` for all project configuration
 - **Ruff**: Lightning-fast Python linter and formatter (replaces Black, Flake8, isort, and Bandit)
+- **Pydantic**: Data validation and settings management with Python type hints
+- **Dataclasses**: Simple data structures with built-in validation
 - **Pre-commit Hooks**: Automated code quality checks before every commit
 - **Testing**: Pytest with coverage reporting (minimum 80% required)
-- **Type Checking**: MyPy for static type analysis
+- **Type Checking**: Ty for static type analysis (modern MyPy alternative)
+- **Documentation**: MkDocs with Material theme for beautiful documentation
+- **UV Support**: Fast Python package manager integration
+- **Makefile**: Convenient development commands
+- **Security**: Gitleaks for preventing secret commits
+- **Dependency Updates**: Dependabot for automated dependency management
 - **VS Code Integration**: Pre-configured settings for optimal development experience
 - **GitHub Ready**: Includes issue templates and project structure
 - **Clean Project Structure**: Organized layout following Python best practices
 
 ## 📋 Prerequisites
 
-- Python 3.8 or higher
+- Python 3.9 or higher
 - Git
-- pip
+- pip (or UV for faster package management)
 
 ## 🎯 Quick Start
 
@@ -128,6 +135,14 @@ After creating your project:
 cd my-project
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Using Make (recommended)
+make install
+
+# Or using UV (fastest)
+uv pip install -e ".[dev]"
+
+# Or using pip
 pip install -e ".[dev]"
 ```
 
@@ -141,12 +156,24 @@ pre-commit install
 
 Available commands:
 
-- `ruff check .` - Run linting
-- `ruff format .` - Format code
-- `pytest` - Run tests
-- `pytest --cov` - Run tests with coverage
-- `mypy .` - Run type checking
-- `pre-commit run --all-files` - Run all checks
+```bash
+# Using Make (recommended)
+make help         # Show all available commands
+make test         # Run tests with coverage
+make lint         # Run linting
+make format       # Format code
+make type-check   # Run type checking
+make docs         # Build documentation
+make all          # Run all checks
+
+# Or run tools directly
+ruff check .      # Run linting
+ruff format .     # Format code
+pytest --cov     # Run tests with coverage
+ty .             # Run type checking
+mkdocs serve     # Serve documentation locally
+pre-commit run --all-files  # Run all checks
+```
 
 ## ⚙️ Configuration
 
@@ -154,8 +181,10 @@ All tool configurations are centralized in `pyproject.toml`:
 
 - **Ruff**: Linting and formatting rules (120 character line length)
 - **Pytest**: Test discovery and coverage settings
-- **MyPy**: Type checking configuration
+- **Ty**: Type checking configuration (modern MyPy alternative)
 - **Coverage**: 80% minimum coverage requirement
+- **MkDocs**: Documentation configuration
+- **Pydantic**: Data validation and serialization
 
 ## 🤝 Pre-commit Hooks
 
@@ -166,18 +195,20 @@ The following checks run automatically on commit:
 - YAML validation
 - Large file detection
 - Ruff linting and formatting
-- MyPy type checking
+- Ty type checking
 - Markdown formatting
 - Test coverage validation
+- Gitleaks security scanning (prevents secret commits)
 
 ## 📝 VS Code Integration
 
 If you use VS Code, the project includes:
 
-- Recommended extensions (Ruff, Python, MyPy)
+- Recommended extensions (Ruff, Python, Ty)
 - Configured formatters and linters
 - Format-on-save enabled
 - Test discovery configured
+- Integrated debugging configuration
 
 ## 🔄 Updating the Template
 
@@ -205,8 +236,13 @@ This template is released under the MIT License. Your generated projects can use
 Built with modern Python development best practices and powered by:
 
 - [Ruff](https://github.com/astral-sh/ruff) - An extremely fast Python linter and formatter
+- [Pydantic](https://pydantic.dev/) - Data validation using Python type hints
 - [Pytest](https://pytest.org) - The pytest framework
+- [Ty](https://github.com/dosisod/ty) - Modern type checker for Python
 - [Pre-commit](https://pre-commit.com) - A framework for managing git hooks
+- [MkDocs](https://www.mkdocs.org/) - Project documentation with Markdown
+- [UV](https://github.com/astral-sh/uv) - An extremely fast Python package installer and resolver
+- [Gitleaks](https://github.com/gitleaks/gitleaks) - Detect and prevent secrets in git repos
 
 ______________________________________________________________________
 
