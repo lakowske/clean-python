@@ -5,7 +5,6 @@ SHELL := /bin/bash
 PYTHON := python3
 VENV_DIR := .venv
 VENV_PYTHON := $(VENV_DIR)/bin/python
-VENV_PIP := $(VENV_DIR)/bin/pip
 
 # Colors for output
 GREEN := \033[0;32m
@@ -13,14 +12,13 @@ YELLOW := \033[0;33m
 RED := \033[0;31m
 NC := \033[0m # No Color
 
-.PHONY: help install install-uv test lint format type-check docs clean all pre-commit
+.PHONY: help install test lint format type-check docs clean all pre-commit
 
 # Default target
 help:
 	@echo "Available targets:"
 	@echo "  help         - Show this help message"
-	@echo "  install      - Install development dependencies (prefer uv if available)"
-	@echo "  install-uv   - Install development dependencies using uv"
+	@echo "  install      - Install development dependencies using uv"
 	@echo "  test         - Run tests with coverage"
 	@echo "  lint         - Run linting checks"
 	@echo "  format       - Format code with ruff"
@@ -36,18 +34,9 @@ $(VENV_DIR):
 	uv venv $(VENV_DIR)
 	@echo -e "$(GREEN)✓ Virtual environment created at $(VENV_DIR)$(NC)"
 
-# Install dependencies - prefer uv if available
+# Install dependencies using uv
 install: $(VENV_DIR)
-	@if command -v uv > /dev/null 2>&1; then \
-		echo "Using uv for installation..."; \
-		uv pip install --python $(VENV_PYTHON) -e ".[dev]"; \
-	else \
-		echo "Using pip for installation..."; \
-		$(VENV_PIP) install -e ".[dev]"; \
-	fi
-
-# Install using uv specifically
-install-uv: $(VENV_DIR)
+	@echo "Installing development dependencies with uv..."
 	uv pip install --python $(VENV_PYTHON) -e ".[dev]"
 
 # Run tests with coverage
