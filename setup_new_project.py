@@ -179,6 +179,33 @@ def update_pyproject_toml(config: dict[str, Any]) -> None:
     print("✅ Updated pyproject.toml")
 
 
+def create_claude_md(config: dict[str, Any]) -> None:
+    """Create CLAUDE.md from template with project information."""
+    template_path = Path("CLAUDE.md.template")
+    claude_path = Path("CLAUDE.md")
+
+    # Check if template exists in the copied files
+    if template_path.exists():
+        content = template_path.read_text(encoding="utf-8")
+
+        # Replace placeholders with project information
+        content = content.replace("{project_name}", config["project_name"])
+        content = content.replace("{description}", config["description"])
+        content = content.replace("{module_name}", config["module_name"])
+        content = content.replace("{author_name}", config["author_name"])
+        content = content.replace("{author_email}", config["author_email"])
+
+        # Write the customized CLAUDE.md
+        claude_path.write_text(content, encoding="utf-8")
+
+        # Remove the template file
+        template_path.unlink()
+
+        print("✅ Created CLAUDE.md")
+    else:
+        print("⚠️  CLAUDE.md.template not found, skipping CLAUDE.md creation")
+
+
 def update_readme_md(config: dict[str, Any]) -> None:
     """Update README.md with project information."""
     readme_path = Path("README.md")
@@ -472,6 +499,7 @@ def copy_template_files(source_dir: Path, target_dir: Path) -> None:
         "htmlcov",
         ".coverage",
         "setup_new_project.py",  # Don't copy this setup script
+        "CLAUDE.md",  # Don't copy template's CLAUDE.md
         "tmp",  # Don't copy tmp directory
         "test_integration.py",  # Don't copy integration test
     }
@@ -551,6 +579,7 @@ def main() -> None:
     # Update all project files
     update_pyproject_toml(config)
     update_readme_md(config)
+    create_claude_md(config)
     rename_module_directory(config)
     update_imports_in_files(config)
     update_documentation(config)
