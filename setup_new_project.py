@@ -184,6 +184,11 @@ def update_pyproject_toml(config: dict[str, Any], include_database: bool = False
         f'module = "src.{module_name}.core"',
         content,
     )
+    content = re.sub(
+        r'module = "src\.clean_python\.db\.\*"',
+        f'module = "src.{module_name}.db.*"',
+        content,
+    )
 
     # Remove database dependencies if not included
     if not include_database:

@@ -3,7 +3,7 @@
 import logging
 from collections.abc import Generator
 from contextlib import contextmanager
-from typing import Optional
+from typing import Optional, Union
 
 from sqlalchemy import Engine, create_engine
 from sqlalchemy.orm import Session, sessionmaker
@@ -169,7 +169,12 @@ class DatabaseSession:
         self.initialize()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+    def __exit__(
+        self,
+        exc_type: Union[type[BaseException], None],
+        exc_val: Union[BaseException, None],
+        exc_tb: object,
+    ) -> None:
         """Exit context manager - close database.
 
         Args:
