@@ -53,7 +53,7 @@ format:
 
 # Run type checking
 type-check:
-	mypy src
+	mypy .
 
 # Build documentation
 docs:
