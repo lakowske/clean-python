@@ -116,7 +116,8 @@ class UserProfileRepository(BaseRepository[UserProfile]):
                 return None
 
             self.logger.debug(f"User profile retrieved - id: {db_model.id}, email: {db_model.email}")
-            return db_model.to_pydantic()
+            result: UserProfile = db_model.to_pydantic()
+            return result
 
         except Exception as e:
             self.logger.error(f"Failed to retrieve user profile - id: {id}, error: {str(e)}", exc_info=True)
@@ -149,7 +150,8 @@ class UserProfileRepository(BaseRepository[UserProfile]):
                 return None
 
             self.logger.debug(f"User profile retrieved - id: {db_model.id}, email: {db_model.email}")
-            return db_model.to_pydantic()
+            result: UserProfile = db_model.to_pydantic()
+            return result
 
         except Exception as e:
             self.logger.error(f"Failed to retrieve user profile - email: {email}, error: {str(e)}", exc_info=True)
@@ -228,7 +230,8 @@ class UserProfileRepository(BaseRepository[UserProfile]):
             self.logger.debug(f"User profile updated - id: {db_model.id}, email: {db_model.email}")
             self.logger.info(f"User profile updated successfully - id: {id}")
 
-            return db_model.to_pydantic()
+            result: UserProfile = db_model.to_pydantic()
+            return result
 
         except IntegrityError as e:
             self.logger.error(

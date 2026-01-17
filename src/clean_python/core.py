@@ -26,7 +26,7 @@ class UserProfile(BaseModel):
         default_factory=lambda: datetime.now(timezone.utc), description="Profile creation time"
     )
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[misc]
     def validate_model(self) -> "UserProfile":
         """Validate the entire model."""
         # Validate name doesn't contain numbers

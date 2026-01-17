@@ -114,11 +114,14 @@ def test_calculation_result_to_dict() -> None:
 
 def test_calculation_result_invalid_operands() -> None:
     """Test CalculationResult with invalid operands."""
+    invalid_operand_a: Any = "invalid"
+    invalid_operand_b: Any = "invalid"
+
     with pytest.raises(TypeError, match="operand_a must be a number"):
-        CalculationResult(operand_a="invalid", operand_b=5, operation="test", result=5)
+        CalculationResult(operand_a=invalid_operand_a, operand_b=5, operation="test", result=5)
 
     with pytest.raises(TypeError, match="operand_b must be a number"):
-        CalculationResult(operand_a=5, operand_b="invalid", operation="test", result=5)
+        CalculationResult(operand_a=5, operand_b=invalid_operand_b, operation="test", result=5)
 
 
 # Tests for UserProfile Pydantic model

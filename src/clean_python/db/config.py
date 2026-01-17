@@ -46,7 +46,7 @@ class DatabaseConfig(BaseModel):
 
     model_config = {"env_prefix": "DB_"}
 
-    @model_validator(mode="after")
+    @model_validator(mode="after")  # type: ignore[misc]
     def set_default_port(self) -> "DatabaseConfig":
         """Set default port based on database type if not provided.
 
