@@ -419,4 +419,242 @@ async def create_user(request: CreateUserRequest):
         raise HTTPException(status_code=400, detail=str(e))
 ```
 
+## Database Examples
+
+> **Note**: The database module is optional. Include it when creating a new project with the `--with-database` flag.
+
+The template includes a complete SQL database integration with SQLAlchemy and Alembic, supporting SQLite, PostgreSQL, and MySQL.
+
+### Database Configuration
+
+```python
+from clean_python.db import DatabaseConfig, DatabaseSession
+
+# SQLite (default)
+config = DatabaseConfig(
+    db_type="sqlite",
+    database="app.db",
+    echo=False  # Set to True for SQL query logging
+)
+
+# PostgreSQL
+config = DatabaseConfig(
+    db_type="postgresql",
+    host="localhost",
+    port=5432,
+    database="myapp",
+    username="postgres",
+    password="secret",
+    pool_size=5,
+    max_overflow=10
+)
+
+# MySQL
+config = DatabaseConfig(
+    db_type="mysql",
+    host="localhost",
+    port=3306,
+    database="myapp",
+    username="root",
+    password="secret"
+)
+
+# Environment variable support (DB_ prefix)
+# Set DB_TYPE, DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD
+config = DatabaseConfig.from_env()
+```
+
+### Session Management
+
+```python
+from clean_python.db import DatabaseSession
+
+# Initialize database
+db_session = DatabaseSession(config)
+db_session.initialize(create_tables=True)
+
+# Using context manager (recommended)
+with db_session.get_session() as session:
+    # Automatic commit on success, rollback on error
+    profile = UserProfileModel(name="Jane Doe", email="jane@example.com")
+    session.add(profile)
+    # Session commits automatically when context exits
+
+# Clean up
+db_session.close()
+
+# Or use as context manager for entire lifecycle
+with DatabaseSession(config) as db:
+    with db.get_session() as session:
+        # Use session here
+        pass
+```
+
+### Repository Pattern
+
+```python
+from clean_python.db import UserProfileRepository
+from clean_python.core import UserProfile
+
+# Create repository with session
+with db_session.get_session() as session:
+    repo = UserProfileRepository(session)
+
+    # Create
+    profile = UserProfile(name="Jane Doe", email="jane@example.com", age=30)
+    created = repo.create(profile)
+    print(f"Created user: {created.name}")
+
+    # Read by ID
+    user = repo.get_by_id(1)
+    if user:
+        print(f"Found user: {user.email}")
+
+    # Read by email
+    user = repo.get_by_email("jane@example.com")
+
+    # List all (with pagination)
+    users = repo.list_all(limit=10, offset=0)
+
+    # Update
+    if user:
+        user.age = 31
+        updated = repo.update(1, user)
+
+    # Delete
+    deleted = repo.delete(1)
+
+    # Count
+    total = repo.count()
+```
+
+### ORM Models
+
+```python
+from clean_python.db import UserProfileModel, Base
+from clean_python.core import UserProfile
+
+# Convert between Pydantic and ORM models
+pydantic_model = UserProfile(name="John Doe", email="john@example.com")
+orm_model = UserProfileModel.from_pydantic(pydantic_model)
+
+# Save to database
+with db_session.get_session() as session:
+    session.add(orm_model)
+    session.flush()  # Get ID without committing
+
+    # Convert back to Pydantic
+    result = orm_model.to_pydantic()
+    print(f"Saved with ID: {orm_model.id}")
+
+# Query directly with ORM
+with db_session.get_session() as session:
+    users = session.query(UserProfileModel).filter(
+        UserProfileModel.age > 25
+    ).all()
+
+    for user in users:
+        print(f"{user.name}: {user.email}")
+```
+
+### Database Migrations with Alembic
+
+```bash
+# Create a new migration
+alembic revision --autogenerate -m "Add user_preferences table"
+
+# View migration history
+alembic history
+
+# Apply migrations
+alembic upgrade head
+
+# Rollback one version
+alembic downgrade -1
+
+# View current version
+alembic current
+```
+
+### Error Handling
+
+```python
+from sqlalchemy.exc import IntegrityError
+from clean_python.db import UserProfileRepository
+
+def safe_create_user(name: str, email: str):
+    """Safely create user with proper error handling."""
+    try:
+        with db_session.get_session() as session:
+            repo = UserProfileRepository(session)
+            profile = UserProfile(name=name, email=email)
+            return repo.create(profile)
+    except ValueError as e:
+        # Duplicate email or validation error
+        logger.warning(f"User creation failed: {e}")
+        return None
+    except Exception as e:
+        logger.error(f"Unexpected error: {e}", exc_info=True)
+        raise
+
+# Usage
+user = safe_create_user("Jane Doe", "jane@example.com")
+if user:
+    print(f"Created: {user.name}")
+else:
+    print("User with this email already exists")
+```
+
+### Testing Database Code
+
+```python
+import pytest
+from clean_python.db import DatabaseConfig, DatabaseSession, UserProfileRepository
+from clean_python.core import UserProfile
+
+@pytest.fixture
+def db_session():
+    """Create in-memory SQLite database for testing."""
+    config = DatabaseConfig(db_type="sqlite", database=":memory:")
+    db = DatabaseSession(config)
+    db.initialize(create_tables=True)
+    yield db
+    db.close()
+
+@pytest.fixture
+def repository(db_session):
+    """Create repository for testing."""
+    with db_session.get_session() as session:
+        yield UserProfileRepository(session)
+
+def test_create_user(repository):
+    """Test user creation."""
+    profile = UserProfile(name="Test User", email="test@example.com")
+    created = repository.create(profile)
+
+    assert created.name == "Test User"
+    assert created.email == "test@example.com"
+
+def test_duplicate_email(repository):
+    """Test duplicate email handling."""
+    profile1 = UserProfile(name="User One", email="test@example.com")
+    profile2 = UserProfile(name="User Two", email="test@example.com")
+
+    repository.create(profile1)
+
+    with pytest.raises(ValueError, match="already exists"):
+        repository.create(profile2)
+```
+
+### Complete Example
+
+See `examples/database_example.py` for a comprehensive example demonstrating:
+
+- Database configuration for multiple backends
+- Session management and context managers
+- Repository pattern for CRUD operations
+- Error handling and duplicate detection
+- Pagination and querying
+- PostgreSQL configuration example
+
 These examples demonstrate modern Python patterns that promote code quality, maintainability, and type safety. The template includes all necessary dependencies and configurations to support these patterns out of the box.

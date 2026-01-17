@@ -8,6 +8,7 @@ A modern Python project template with pre-commit hooks for linting, formatting, 
 - **Ruff**: Lightning-fast Python linter and formatter (replaces Black, Flake8, isort, and Bandit)
 - **Pydantic**: Data validation and settings management with Python type hints
 - **Dataclasses**: Simple data structures with built-in validation
+- **Database Integration (Optional)**: SQLAlchemy 2.0+ with Alembic migrations, repository pattern, and multi-database support (SQLite, PostgreSQL, MySQL)
 - **Pre-commit Hooks**: Automated code quality checks before every commit
 - **Testing**: Pytest with coverage reporting (minimum 80% required)
 - **Type Checking**: Ty for static type analysis (modern MyPy alternative)
@@ -133,15 +134,30 @@ my-project/
 ├── src/
 │   └── my_project/          # Your package (renamed from clean_python)
 │       ├── __init__.py
-│       ├── core.py          # Example module
-│       └── actions/         # Example subpackage
+│       ├── core.py          # Example module with Pydantic models
+│       ├── actions/         # Build and automation scripts
+│       └── db/             # Database module (if --with-database used)
+│           ├── __init__.py
+│           ├── base.py     # Repository base classes
+│           ├── config.py   # Database configuration
+│           ├── models.py   # SQLAlchemy ORM models
+│           ├── repository.py  # Repository implementations
+│           ├── session.py  # Session management
+│           └── migrations/ # Alembic migration files
 ├── tests/                   # Test suite
 │   ├── conftest.py
-│   └── test_*.py
+│   ├── test_core.py
+│   └── test_db_*.py        # Database tests (if --with-database used)
+├── examples/
+│   └── database_example.py  # Database examples (if --with-database used)
+├── docs/                    # MkDocs documentation
 ├── .github/                 # GitHub templates
 ├── .vscode/                 # VS Code settings
+├── alembic.ini             # Alembic config (if --with-database used)
+├── .env.example            # Environment variables (if --with-database used)
 ├── .pre-commit-config.yaml  # Pre-commit hooks
 ├── pyproject.toml          # Project configuration
+├── Makefile                # Development commands
 ├── .gitignore
 └── README.md               # Your project's README
 ```
@@ -160,11 +176,18 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 # Using Make (recommended)
 make install
 
-# Or using UV (fastest)
+# If you included database module (--with-database)
+pip install -e ".[database]"  # Or: uv pip install -e ".[database]"
+
+# Or install everything at once
+# Without database:
 uv pip install -e ".[dev]"
+# With database:
+uv pip install -e ".[dev,database]"
 
 # Or using pip
-pip install -e ".[dev]"
+pip install -e ".[dev]"  # Without database
+pip install -e ".[dev,database]"  # With database
 ```
 
 ### 2. Install pre-commit hooks

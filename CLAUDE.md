@@ -24,6 +24,23 @@ For detailed usage instructions and features, see [README.md](README.md).
 - **HTML coverage reports** - Generated in `htmlcov/` directory
 - **Integration testing** - Structured test organization
 
+### Database Integration (Optional)
+
+- **SQLAlchemy 2.0+** - Modern ORM with full type hint support
+- **Alembic** - Database migration management
+- **Repository pattern** - Clean separation of data access logic
+- **Multi-database support** - SQLite (default), PostgreSQL, MySQL
+- **Pydantic integration** - Seamless conversion between ORM and Pydantic models
+- **Environment configuration** - DB\_ prefixed environment variables
+- **Connection pooling** - Configurable for production workloads
+- **Comprehensive tests** - Full test coverage for database operations
+
+To include the database module when creating a new project, use the `--with-database` flag:
+
+```bash
+python setup_new_project.py --name my-project --with-database
+```
+
 ### Git Workflow
 
 - **Pre-commit configuration** - Ensures code quality on every commit
@@ -40,12 +57,31 @@ For detailed usage instructions and features, see [README.md](README.md).
 
 ```text
 clean-python/
-├── actions/          # Project build and automation scripts
-├── tests/           # Test suite with pytest configuration
-├── build/           # Build artifacts (auto-generated)
-├── htmlcov/         # HTML coverage reports
+├── src/clean_python/
+│   ├── __init__.py
+│   ├── core.py         # Core business logic and models
+│   ├── actions/        # Build and automation scripts
+│   └── db/            # Database module (optional, with --with-database)
+│       ├── __init__.py
+│       ├── base.py    # Repository base classes
+│       ├── config.py  # Database configuration
+│       ├── models.py  # SQLAlchemy ORM models
+│       ├── repository.py  # Repository implementations
+│       ├── session.py # Session management
+│       └── migrations/    # Alembic migration files
+├── tests/             # Test suite with pytest configuration
+│   ├── conftest.py    # Test fixtures
+│   ├── test_core.py
+│   └── test_db_*.py   # Database tests (with --with-database)
+├── examples/
+│   └── database_example.py  # Database usage example (optional)
+├── docs/              # MkDocs documentation
+├── build/             # Build artifacts (auto-generated)
+├── htmlcov/           # HTML coverage reports
+├── alembic.ini        # Alembic configuration (with --with-database)
+├── .env.example       # Environment variables template (with --with-database)
 ├── .pre-commit-config.yaml  # Pre-commit hook configuration
-└── setup.cfg        # Project metadata and configuration
+└── pyproject.toml     # Project metadata and dependencies
 ```
 
 ## Development Commands
@@ -158,6 +194,32 @@ python setup_new_project.py \
     --output-dir ~/projects/ml/sentiment-analysis
 ```
 
+### Example 4: Create a project with database module
+
+```bash
+# Clone template
+git clone https://github.com/lakowske/clean-python.git
+cd clean-python
+
+# Create project with database support
+python setup_new_project.py \
+    --name user-management-api \
+    --description "User management API with PostgreSQL" \
+    --author "Backend Developer" \
+    --email "backend@company.com" \
+    --with-database \
+    -y
+```
+
+This creates a project with:
+
+- Complete SQLAlchemy 2.0+ setup with type hints
+- Alembic migrations pre-configured
+- Repository pattern implementation
+- Database examples and comprehensive tests
+- Support for SQLite, PostgreSQL, and MySQL
+- Environment-based configuration
+
 ### After Project Creation
 
 The new project will be created with:
@@ -173,8 +235,27 @@ Next steps in the new project:
 cd ../my-new-project  # or cd to your custom output directory
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
+
+# Without database
 pip install -e ".[dev]"
+
+# With database (if you used --with-database)
+pip install -e ".[dev,database]"
+
 pre-commit install
+```
+
+If you included the database module:
+
+```bash
+# Run the database example
+python examples/database_example.py
+
+# Create a migration after model changes
+alembic revision --autogenerate -m "Description"
+
+# Apply migrations
+alembic upgrade head
 ```
 
 Now you can start coding with all quality checks automated!
