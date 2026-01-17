@@ -563,6 +563,7 @@ def copy_template_files(source_dir: Path, target_dir: Path, include_database: bo
         "tmp",  # Don't copy tmp directory
         "test_integration.py",  # Don't copy integration test
         "app.db",  # Don't copy example database
+        "plans",  # Don't copy planning documents
     }
 
     # Add database-related exclusions if not including database
@@ -577,7 +578,6 @@ def copy_template_files(source_dir: Path, target_dir: Path, include_database: bo
                 "test_db_models.py",
                 "test_db_repository.py",
                 "test_db_session.py",
-                "data-store-module-plan.md",  # Database planning doc
             }
         )
 
