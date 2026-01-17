@@ -60,6 +60,11 @@ Examples:
         "--output-dir",
         help="Directory to create the new project in (default: ../<project-name>)",
     )
+    parser.add_argument(
+        "--with-database",
+        action="store_true",
+        help="Include SQL database module (SQLAlchemy, Alembic, and examples)",
+    )
     parser.add_argument("--no-git", action="store_true", help="Skip git repository initialization")
     parser.add_argument(
         "--skip-cleanup",
@@ -141,8 +146,13 @@ def get_user_input(args: argparse.Namespace) -> dict[str, Any]:
     }
 
 
-def update_pyproject_toml(config: dict[str, Any]) -> None:
-    """Update pyproject.toml with project information."""
+def update_pyproject_toml(config: dict[str, Any], include_database: bool = False) -> None:
+    """Update pyproject.toml with project information.
+
+    Args:
+        config: Project configuration dictionary.
+        include_database: Whether to keep database dependencies.
+    """
     pyproject_path = Path("pyproject.toml")
     content = pyproject_path.read_text(encoding="utf-8")
 
@@ -174,6 +184,26 @@ def update_pyproject_toml(config: dict[str, Any]) -> None:
         f'module = "src.{module_name}.core"',
         content,
     )
+
+    # Remove database dependencies if not included
+    if not include_database:
+        # Remove the [project.optional-dependencies.database] section
+        content = re.sub(r"\[project\.optional-dependencies\.database\].*?\n(?=\n\[|\Z)", "", content, flags=re.DOTALL)
+
+        # Remove database-specific linting rules
+        content = re.sub(r'"src/clean_python/db/repository\.py".*?\n', "", content)
+        content = re.sub(r'"src/clean_python/db/session\.py".*?\n', "", content)
+        content = re.sub(r'"src/clean_python/db/models\.py".*?\n', "", content)
+        content = re.sub(r'"src/clean_python/db/migrations/env\.py".*?\n', "", content)
+        content = re.sub(r'"src/clean_python/db/migrations/versions/\*\.py".*?\n', "", content)
+
+        # Remove database-specific mypy overrides
+        content = re.sub(
+            r'\[\[tool\.mypy\.overrides\]\]\nmodule = "src\.clean_python\.db\.\*".*?\n(?=\n\[|\Z)',
+            "",
+            content,
+            flags=re.DOTALL,
+        )
 
     pyproject_path.write_text(content, encoding="utf-8")
     print("✅ Updated pyproject.toml")
@@ -423,6 +453,25 @@ def update_documentation(config: dict[str, Any]) -> None:
             print(f"⚠️  Could not update API reference: {e}")
 
 
+def update_conftest_remove_database(include_database: bool) -> None:
+    """Update conftest.py to remove database fixtures if not including database.
+
+    Args:
+        include_database: Whether database module is included.
+    """
+    if include_database:
+        return  # Keep conftest.py as-is
+
+    conftest_path = Path("tests/conftest.py")
+    if not conftest_path.exists():
+        return
+
+    # Replace with minimal conftest without database fixtures
+    minimal_content = '"""Configuration for pytest."""\n'
+    conftest_path.write_text(minimal_content, encoding="utf-8")
+    print("✅ Updated tests/conftest.py (removed database fixtures)")
+
+
 def update_github_workflows(config: dict[str, Any]) -> None:
     """Update GitHub Actions workflow files."""
     _ = config  # Currently unused, but kept for future expansion
@@ -485,8 +534,14 @@ def create_initial_git_commit(config: dict[str, Any]) -> None:
         print(f"⚠️  Could not create git commit: {e}")
 
 
-def copy_template_files(source_dir: Path, target_dir: Path) -> None:
-    """Copy all template files to the target directory."""
+def copy_template_files(source_dir: Path, target_dir: Path, include_database: bool = False) -> None:
+    """Copy all template files to the target directory.
+
+    Args:
+        source_dir: Source directory (template).
+        target_dir: Target directory (new project).
+        include_database: Whether to include the database module and related files.
+    """
     # Files and directories to exclude from copying
     exclude_patterns = {
         ".git",
@@ -502,7 +557,24 @@ def copy_template_files(source_dir: Path, target_dir: Path) -> None:
         "CLAUDE.md",  # Don't copy template's CLAUDE.md
         "tmp",  # Don't copy tmp directory
         "test_integration.py",  # Don't copy integration test
+        "app.db",  # Don't copy example database
     }
+
+    # Add database-related exclusions if not including database
+    if not include_database:
+        exclude_patterns.update(
+            {
+                "db",  # Database module directory
+                "alembic.ini",  # Alembic configuration
+                ".env.example",  # Environment example (database-specific)
+                "database_example.py",  # Database example
+                "test_db_config.py",  # Database tests
+                "test_db_models.py",
+                "test_db_repository.py",
+                "test_db_session.py",
+                "data-store-module-plan.md",  # Database planning doc
+            }
+        )
 
     def should_exclude(path: Path) -> bool:
         """Check if a path should be excluded."""
@@ -553,10 +625,17 @@ def main() -> None:
         print("Please choose a different project name or output directory.")
         sys.exit(1)
 
+    # Determine if database should be included
+    include_database = args.with_database
+
     # Show confirmation unless skipped
     if not args.yes:
         print(f"This script will create a new project at: {output_dir}")
         print(f"Based on the clean-python template at: {Path.cwd()}")
+        if include_database:
+            print("✓ Including SQL database module (SQLAlchemy, Alembic)")
+        else:
+            print("⊘ Excluding SQL database module")
 
         proceed = input("\\nDo you want to continue? (y/N): ").strip().lower()
         if proceed not in ["y", "yes"]:
@@ -566,9 +645,13 @@ def main() -> None:
     # Create output directory
     output_dir.mkdir(parents=True, exist_ok=False)
     print(f"\\n🔧 Creating new project at: {output_dir}")
+    if include_database:
+        print("  Including database module and examples")
+    else:
+        print("  Excluding database module (use --with-database to include)")
 
     # Copy template files
-    copy_template_files(Path.cwd(), output_dir)
+    copy_template_files(Path.cwd(), output_dir, include_database=include_database)
 
     # Change to output directory for all operations
     original_dir = Path.cwd()
@@ -577,12 +660,13 @@ def main() -> None:
     print("\\n🔧 Updating project files...")
 
     # Update all project files
-    update_pyproject_toml(config)
+    update_pyproject_toml(config, include_database=include_database)
     update_readme_md(config)
     create_claude_md(config)
     rename_module_directory(config)
     update_imports_in_files(config)
     update_documentation(config)
+    update_conftest_remove_database(include_database)
     update_github_workflows(config)
 
     print("\\n🎉 Project setup complete!")
@@ -625,14 +709,29 @@ def main() -> None:
     print(f"1. cd {output_dir}")
     print("2. Create a virtual environment: python -m venv .venv")
     print("3. Activate: source .venv/bin/activate  # Win: .venv\\Scripts\\activate")
-    print("4. Install dependencies: make install  # or pip install -e '.[dev]'")
+
+    # Different installation instructions based on database inclusion
+    if include_database:
+        print("4. Install dependencies with database: pip install -e '.[dev,database]'")
+        print("   Or use make: make install && pip install -e '.[database]'")
+    else:
+        print("4. Install dependencies: make install  # or pip install -e '.[dev]'")
+
     if not args.no_git:
         print("5. Install pre-commit hooks: pre-commit install")
-        print("6. Start coding! 🚀")
+        if include_database:
+            print("6. Check database example: python examples/database_example.py")
+            print("7. Start coding! 🚀")
+        else:
+            print("6. Start coding! 🚀")
     else:
         print("5. Initialize git: git init")
         print("6. Install pre-commit hooks: pre-commit install")
-        print("7. Start coding! 🚀")
+        if include_database:
+            print("7. Check database example: python examples/database_example.py")
+            print("8. Start coding! 🚀")
+        else:
+            print("7. Start coding! 🚀")
 
 
 if __name__ == "__main__":

@@ -605,12 +605,12 @@ def create(self, profile: UserProfile) -> UserProfile:
 - [ ] Document migration workflow
 - [ ] Add migration tests
 
-### Phase 4: Integration with Setup Script (Priority: High)
+### Phase 4: Integration with Setup Script (Priority: High) ✅
 
-- [ ] Add --with-database flag to setup_new_project.py
-- [ ] Implement conditional file copying logic
-- [ ] Update pyproject.toml dependency management
-- [ ] Test project generation with and without database
+- [x] Add --with-database flag to setup_new_project.py
+- [x] Implement conditional file copying logic
+- [x] Update pyproject.toml dependency management
+- [x] Test project generation with and without database
 
 ### Phase 5: Examples and Documentation (Priority: Medium)
 
@@ -745,13 +745,22 @@ def create(self, profile: UserProfile) -> UserProfile:
 
 ### Not Yet Implemented
 
-#### Phase 4: Setup Script Integration ⏳
+#### Phase 4: Setup Script Integration ✅
 
-The `--with-database` flag for setup_new_project.py is not yet implemented. This would allow users to:
+The `--with-database` flag for setup_new_project.py has been successfully implemented. Users can now:
 
-- Optionally include/exclude the database module
-- Conditionally install database dependencies
-- Clean project generation based on user needs
+- Optionally include/exclude the database module using `--with-database` flag
+- Generate projects without database dependencies (default behavior)
+- Generate projects with full database support when flag is specified
+- Files excluded when flag is NOT used:
+  - `src/{project}/db/` directory and all modules
+  - `alembic.ini` configuration file
+  - `.env.example` environment template
+  - `examples/database_example.py`
+  - `tests/test_db_*.py` test files
+  - `data-store-module-plan.md` planning document
+- Dependencies automatically removed from pyproject.toml when database not included
+- Tests pass in both configurations (27 files without database, 45 files with database)
 
 #### Phase 5: Documentation Updates ⏳
 

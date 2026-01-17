@@ -75,19 +75,40 @@ python setup_new_project.py \
     --output-dir ~/projects/my-new-project
 ```
 
+### Option 4: Include Database Module
+
+Create a project with the optional SQL database module (SQLAlchemy, Alembic):
+
+```bash
+python setup_new_project.py \
+    --name my-database-project \
+    --with-database \
+    --author "Jane Doe" \
+    --email jane@example.com \
+    -y
+```
+
+This includes:
+
+- Database configuration with support for SQLite, PostgreSQL, and MySQL
+- Repository pattern implementation
+- Alembic migration setup
+- Database example and comprehensive tests
+
 ## 🛠️ Setup Options
 
-| Option           | Description                                            |
-| ---------------- | ------------------------------------------------------ |
-| `--name`         | Project name (required)                                |
-| `--description`  | Project description                                    |
-| `--author`       | Your name                                              |
-| `--email`        | Your email address                                     |
-| `--github`       | Your GitHub username                                   |
-| `--output-dir`   | Custom output directory (default: `../<project-name>`) |
-| `--no-git`       | Skip git repository initialization                     |
-| `--skip-cleanup` | Keep template files (including setup script)           |
-| `-y, --yes`      | Skip confirmation prompts                              |
+| Option            | Description                                            |
+| ----------------- | ------------------------------------------------------ |
+| `--name`          | Project name (required)                                |
+| `--description`   | Project description                                    |
+| `--author`        | Your name                                              |
+| `--email`         | Your email address                                     |
+| `--github`        | Your GitHub username                                   |
+| `--output-dir`    | Custom output directory (default: `../<project-name>`) |
+| `--with-database` | Include SQL database module (SQLAlchemy, Alembic)      |
+| `--no-git`        | Skip git repository initialization                     |
+| `--skip-cleanup`  | Keep template files (including setup script)           |
+| `-y, --yes`       | Skip confirmation prompts                              |
 
 ## 📦 What Gets Configured
 
