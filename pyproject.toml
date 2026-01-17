@@ -32,6 +32,12 @@ where = ["src"]
 "" = "src"
 
 [project.optional-dependencies]
+database = [
+    "sqlalchemy>=2.0.0",         # ORM and database abstraction
+    "alembic>=1.13.0",           # Database migrations
+    "psycopg2-binary>=2.9.0",    # PostgreSQL adapter
+]
+
 dev = [
     "pytest>=8.0.0",
     "pytest-cov>=4.0.0",
@@ -46,6 +52,7 @@ dev = [
     "mkdocs-material>=9.0.0",    # Material theme for MkDocs
     "mkdocstrings[python]>=0.24.0",  # API documentation
     "uv>=0.4.0",                 # Fast Python package manager
+    "pytest-asyncio>=0.23.0",    # For async database tests (future)
 ]
 
 [project.urls]
@@ -110,10 +117,16 @@ ignore = [
 convention = "google"
 
 [tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101", "D103"]  # Allow assert in tests, don't require test docstrings
+"tests/*" = ["S101", "D103", "S106", "S105", "B017", "SIM117", "EM101"]  # Allow assert, hardcoded passwords in tests
 "setup_new_project.py" = ["T201", "S603", "S607", "PTH201", "SIM114", "RET505", "SIM108"]  # Allow print statements and subprocess calls in setup script
 "src/clean_python/actions/build.py" = ["PTH110", "PTH103"]  # Allow os.path usage in build script
 "src/clean_python/core.py" = ["EM101"]  # Allow string literals in exceptions for demo code
+"src/clean_python/db/repository.py" = ["EM102"]  # Allow f-strings in exception messages
+"src/clean_python/db/session.py" = ["F841"]  # Allow unused variable in context manager
+"src/clean_python/db/models.py" = ["RET504"]  # Allow unnecessary variable assignment for clarity
+"src/clean_python/db/migrations/env.py" = ["E402"]  # Allow import after config setup
+"src/clean_python/db/migrations/versions/*.py" = ["D415"]  # Alembic migration docstrings
+"examples/*.py" = ["S106"]  # Allow hardcoded passwords in examples
 "test_integration.py" = ["S603"]  # Allow subprocess calls in integration test
 
 [tool.ruff.lint.isort]
@@ -179,6 +192,14 @@ ignore_missing_imports = true
 [[tool.mypy.overrides]]
 module = "src.clean_python.core"
 disable_error_code = "misc"
+
+[[tool.mypy.overrides]]
+module = "src.clean_python.db.*"
+disable_error_code = ["misc", "no-untyped-def"]
+
+[[tool.mypy.overrides]]
+module = "examples.*"
+disallow_untyped_defs = false
 
 [tool.mkdocs]
 # MkDocs configuration is in mkdocs.yml file
