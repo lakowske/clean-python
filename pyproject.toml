@@ -166,6 +166,8 @@ directory = "htmlcov"
 
 [tool.mypy]
 python_version = "3.9"
+mypy_path = "src"
+namespace_packages = true
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
@@ -180,6 +182,10 @@ warn_unreachable = false
 strict_equality = true
 show_error_codes = true
 explicit_package_bases = true
+exclude = [
+    "^build/",
+    "^\\.venv/",
+]
 
 [[tool.mypy.overrides]]
 module = "tests.*"
