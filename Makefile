@@ -41,28 +41,28 @@ install: $(VENV_DIR)
 
 # Run tests with coverage
 test:
-	pytest --cov=src --cov-report=term-missing --cov-fail-under=80 --cov-report=html
+	$(VENV_DIR)/bin/pytest --cov=src --cov-report=term-missing --cov-fail-under=80 --cov-report=html
 
 # Run linting
 lint:
-	ruff check .
+	$(VENV_DIR)/bin/ruff check .
 
 # Format code
 format:
-	ruff format .
+	$(VENV_DIR)/bin/ruff format .
 
 # Run type checking
 type-check:
-	@if command -v pre-commit >/dev/null 2>&1; then \
-		pre-commit run mypy --all-files; \
+	@if [ -f "$(VENV_DIR)/bin/pre-commit" ]; then \
+		$(VENV_DIR)/bin/pre-commit run mypy --all-files; \
 	else \
-		mypy src tests; \
+		$(VENV_DIR)/bin/mypy src tests; \
 	fi
 
 # Build documentation
 docs:
 	@if [ -f "mkdocs.yml" ]; then \
-		mkdocs build; \
+		$(VENV_DIR)/bin/mkdocs build; \
 	else \
 		echo "No mkdocs.yml found. Run 'mkdocs new .' to initialize docs."; \
 	fi
@@ -82,7 +82,7 @@ clean:
 
 # Run pre-commit checks
 pre-commit:
-	pre-commit run --all-files
+	$(VENV_DIR)/bin/pre-commit run --all-files
 
 # Run all checks
 all: lint format type-check test
