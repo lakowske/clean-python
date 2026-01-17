@@ -183,8 +183,11 @@ strict_equality = true
 show_error_codes = true
 explicit_package_bases = true
 exclude = [
-    "^build/",
-    "^\\.venv/",
+    "build",
+    ".venv",
+    "venv",
+    "dist",
+    ".eggs",
 ]
 
 [[tool.mypy.overrides]]

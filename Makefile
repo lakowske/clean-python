@@ -53,7 +53,7 @@ format:
 
 # Run type checking
 type-check:
-	mypy src tests
+	mypy --no-site-packages src tests
 
 # Build documentation
 docs:
