@@ -53,7 +53,11 @@ format:
 
 # Run type checking
 type-check:
-	mypy --no-site-packages src tests
+	@if command -v pre-commit >/dev/null 2>&1; then \
+		pre-commit run mypy --all-files; \
+	else \
+		mypy src tests; \
+	fi
 
 # Build documentation
 docs:
